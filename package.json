@@ -1,12 +1,12 @@
 {
-  "name": "qk-cli",
+  "name": "custom-cli",
   "version": "1.0.1",
   "description": "react project cli",
   "bin": {
-    "qk-cli": "bin/qk-cli"
+    "custom-cli": "bin/custom-cli"
   },
   "keywords": [
-    "qk-cli",
+    "custom-cli",
     "react",
     "cli"
   ],

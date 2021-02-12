@@ -6,6 +6,6 @@ npm link
 ```
 ### Usage
 ```
-qk-cli init
+custom-cli init
 ```
 
