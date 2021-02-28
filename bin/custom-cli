@@ -4,9 +4,11 @@ const { resolve } = require('path')
 const res = command => resolve(__dirname, '../commands/', command)
 const program = require('commander')
 
-program.version(require('../package').version)
+program.version(require('../package').version, '-v, --version')
 
-program.usage('<command>')
+program
+.usage('custom-cli <command>')
+.usage('custom-cli dev')
 
 program.command('init')
   .option('-f, --foo', 'enable some foo')
@@ -15,7 +17,33 @@ program.command('init')
   .action(() => {
     require(res('init'))
   })
+
+program.command('dev')
+// .option('-t, todos', 'todos options')
+.description('dev project')
+.action((options) => {
+  // console.log('dev options', options)
+  require(res('dev'))()
+})
+
+program.command('create <pageName>')
+.description('dev project')
+.action((pageName) => {
+  // console.log('dev options', options)
+  require(res('create'))(pageName)
+})
+
+program.command('build')
+.description('dev project')
+.action(() => {
+  require(res('build'))()
+})
+
 program.parse(process.argv)
+
+/**
+ * help
+ */
 if (!program.args.length) {
   program.help()
 }

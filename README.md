@@ -1,8 +1,7 @@
 ### Installation
 
 ```
-npm install
-npm link
+npm install -g
 ```
 ### Usage
 ```
