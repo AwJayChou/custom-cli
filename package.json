@@ -1,16 +1,16 @@
 {
-  "name": "custom-cli",
-  "version": "1.0.1",
+  "name": "ali-cli",
+  "version": "1.0.4",
   "description": "react project cli",
   "bin": {
-    "custom-cli": "bin/custom-cli"
+    "ali-cli": "bin/ali-cli"
   },
   "keywords": [
-    "custom-cli",
+    "ali-cli",
     "react",
     "cli"
   ],
-  "author": "jaychou.rjd@aliyun.com",
+  "author": "alichou.rjd@aliyun.com",
   "license": "MIT",
   "homepage": "",
   "dependencies": {
