@@ -13,8 +13,12 @@ custom-cli --version
 
 ```
 提交版本
+npm config set registry http://registry.npmjs.org
+npm config set registry http://registry.npm.taobao.org/
+
 https://registry.npmmirror.com/
-pm publish --access public
+npm version patch
+npm publish --access public
 
 ```
 
