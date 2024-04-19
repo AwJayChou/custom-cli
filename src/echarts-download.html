@@ -1,0 +1,40 @@
+<div id="main" style="height: 800px;width: 800px;margin-left: 300px;">
+ 
+    <a href="javascript:void(0)" class="savepng" ><img onclick="downloadImpByChart('main')"  src="你自定义的图片路径" alt="下载"></a>
+     
+    <script>
+        function downloadImpByChart(main){
+            var myChart = echarts.getInstanceByDom(document.getElementById(main));
+            var url = myChart.getConnectedDataURL({
+                pixelRatio: 5,　　//导出的图片分辨率比率,默认是1
+                backgroundColor: '#fff',　　//图表背景色
+                excludeComponents:[　　//保存图表时忽略的工具组件,默认忽略工具栏
+                    'toolbox'
+                ],
+                type:'png'　　//图片类型支持png和jpeg
+            });
+            var $a = document.createElement('a');
+            var type = 'png';
+            $a.download = myChart.getOption().title[0].text + '.' + type;
+            $a.target = '_blank';
+            $a.href = url;
+            // Chrome and Firefox
+            if (typeof MouseEvent === 'function') {
+                var evt = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: false
+                });
+                $a.dispatchEvent(evt);
+            }
+            // IE
+            else {
+                var html = ''
+                    + '<body style="margin:0;">'
+                    + '<img src="' + url + '" style="max-100%;" title="' +  myChart.getOption().title[0].text + '" />'
+                    + '</body>';
+                var tab = window.open();
+                tab.document.write(html);
+            }
+        };
+    </script>
