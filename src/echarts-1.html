@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+  <script>
+    init()
+    function init() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 400;
+      canvas.className = 'main_canvas';
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      ctx.lineWidth = 5;
+      // 设置边框颜色
+ctx.strokeStyle = '#FF0000'; // 红色
+// 绘制边框
+ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+      const statusConfig = {
+        IDLE: 0,
+        MOVING_START: 3,
+        MOVING: 4,
+      };
+
+      const info = {
+        status: statusConfig.IDLE,
+        offset: { x: 0, y: 0 },
+        lastEvtPos: { x: 0, y: 0 },
+        offsetEvtPos: { x: 0, y: 0 },
+        scale: 1,
+        scaleStep: 0.1,
+        minScale: 0.5,
+        maxScale: 2,
+      };
+
+      const getCanvasPostion = (e) => {
+        return {
+          x: e.offsetX,
+          y: e.offsetY,
+        };
+      };
+
+      const getDistance = (p1, p2) => {
+        return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+      };
+
+      const updateCanvas = () => {
+        const backgroundImage = new Image(); // 创建Image对象
+        backgroundImage.src =
+          'https://ts1.cn.mm.bing.net/th/id/R-C.66d7b796377883a92aad65b283ef1f84?rik=sQ%2fKoYAcr%2bOwsw&riu=http%3a%2f%2fwww.quazero.com%2fuploads%2fallimg%2f140305%2f1-140305131415.jpg&ehk=Hxl%2fQ9pbEiuuybrGWTEPJOhvrFK9C3vyCcWicooXfNE%3d&risl=&pid=ImgRaw&r=0'; //设置图片路径
+        backgroundImage.onload = function () {
+          console.log('图片加载完成');
+          ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); //绘制背景图片
+        };
+      };
+
+      updateCanvas();
+
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        console.log(e);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const canvasPosition = getCanvasPostion(e); //获取画布上的事件坐标
+        console.log(canvasPosition);
+        const realCanvasPosition = {
+          //鼠标在画布上的坐标
+          x: canvasPosition.x - info.offset.x,
+          y: canvasPosition.y - info.offset.y,
+        };
+        // 放缩时产生的偏移量
+        const deltaX = (realCanvasPosition.x / info.scale) * info.scaleStep;
+        const deltaY = (realCanvasPosition.y / info.scale) * info.scaleStep;
+
+        if (e.wheelDelta > 0 && info.scale < info.maxScale) {
+          console.log('上滚');
+          info.offset.x -= deltaX;
+          info.offset.y -= deltaY;
+          info.scale += info.scaleStep;
+        } else if (e.wheelDelta <= 0 && info.scale > info.minScale) {
+          console.log('下滚');
+          info.offset.x += deltaX;
+          info.offset.y += deltaY;
+          info.scale -= info.scaleStep;
+        }
+        ctx.setTransform(
+          info.scale,
+          0,
+          0,
+          info.scale,
+          info.offset.x,
+          info.offset.y
+        );
+        updateCanvas();
+      });
+
+      canvas.addEventListener('mousedown', (e) => {
+        console.log(e);
+        const canvasPosition = getCanvasPostion(e);
+        info.status = statusConfig.MOVE_START;
+        info.offsetEvtPos = canvasPosition;
+      });
+      canvas.addEventListener('mousemove', (e) => {
+        canvas.style.cursor = 'all-scroll';
+        const canvasPosition = getCanvasPostion(e);
+        if (
+          info.status === statusConfig.MOVE_START &&
+          getDistance(canvasPosition, info.lastEvtPos) > 5
+        ) {
+          console.log('try move');
+          info.status = statusConfig.MOVING;
+          info.offsetEvtPos = canvasPosition;
+        } else if (info.status === statusConfig.MOVING) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          console.log('moving');
+          info.offset.x += canvasPosition.x - info.offsetEvtPos.x;
+          info.offset.y += canvasPosition.y - info.offsetEvtPos.y;
+          ctx.setTransform(
+            info.scale,
+            0,
+            0,
+            info.scale,
+            info.offset.x,
+            info.offset.y
+          );
+          updateCanvas();
+          info.offsetEvtPos = canvasPosition;
+        }
+      });
+
+      canvas.addEventListener('mouseup', (e) => {
+        info.status = statusConfig.IDLE;
+      });
+      canvas.addEventListener('mouseleave', (e) => {
+        if (info.status === statusConfig.MOVING) {
+          info.status = statusConfig.IDLE;
+        }
+      });
+    }
+  </script>
+</html>
