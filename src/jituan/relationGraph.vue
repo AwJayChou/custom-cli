@@ -132,22 +132,7 @@ export default {
             },
             name: "othet-node-name",
           });
-          group.addShape("text", {
-            attrs: {
-              text: fittingString(cfg.name, 100, 10).isMax
-                ? ""
-                : fittingString(subText, 95 - cfg.name.length * 10, 8)
-                    .currentWidth > 0
-                ? fittingString(subText, 95 - cfg.name.length * 10, 8).text
-                : "",
-              fontSize: 8,
-              // textAlign: 'left',
-              x: -width / 2 + 8 + Util.getTextSize(cfg.name, 10)[0],
-              textBaseline: "middle",
-              fill: "rgba(153, 153, 153, 1)",
-            },
-            name: "othet-node-count",
-          });
+          
           const bottomText = `${cfg.rate || ""}`;
           group.addShape("text", {
             attrs: {
@@ -236,19 +221,6 @@ export default {
 
                 return text;
               },
-
-              // shouldUpdate: function shouldUpdate(e) {
-              //   const model = e.item.getModel();
-              //   const subText = `(${model.count || ""}家企业)`;
-              //   if (model.level === 0) return false;
-              //   if (
-              //     fittingString(model.name, 100, 10).isMax ||
-              //     fittingString(subText, 95 - model.name.length * 10, 8).isMax
-              //   ) {
-              //     return true;
-              //   }
-              //   return false;
-              // },
             },
             "drag-canvas",
             "zoom-canvas",
@@ -283,49 +255,34 @@ export default {
       graph.on("node:click", (ev) => {
         const { item, target } = ev;
         const name = target.get("name");
+        let model = item.getModel();
         if ("collapse-icon" === name) {
-          let model = item.getModel();
           if (model.collapsed === undefined) {
             model.collapsed = false;
           }
           model.collapsed = !model.collapsed;
           graph.updateChild(model, model.id);
         }
-      });
-      // graph.node((node) => {
-      //   return {
-      //     label: node.name || "",
-      //     anchorPoints: [
-      //       [0, 0.5],
-      //       [1, 0.5],
-      //     ],
-      //   };
-      // });
+        console.log("## item ==> ", model);
+        if (model.level === 2) {
+          if (!model.children) {
+            model.children = [];
 
-      // 监听图的布局事件
-      // graph.on("afterlayout", () => {
-      //   // 获取所有节点
-      //   const nodes = graph.getNodes();
-      //   console.log('## node s => ', nodes)
-      //   // 遍历节点，根据层数控制显示
-      //   nodes.forEach((node) => {
-      //     const depth = node._cfg.model.depth; // 节点的层数
-      //     const model = node.getModel()
-      //     console.log('## node s => ', depth)
-      //     if (depth > 2) {
-      //       // 假设我们只显示前两层
-      //       // graph.hideItem(node); // 隐藏第三层及以后的节点
-      //       if (model.collapsed === undefined) {
-      //       model.collapsed = false;
-      //     }
-      //     model.collapsed = false;
-      //     graph.updateChild(model, model.id);
-      //     }
-      //     // } else {
-      //     //   graph.showItem(node); // 显示前两层的节点
-      //     // }
-      //   });
-      // });
+            const newModel = {
+              id: "newModel",
+              name: "newModel",
+              count: 12,
+              rate: "7.4%",
+              state: "left",
+              type: "other-node",
+            };
+            // graph.addChild(model.id, newModel);
+
+            model.children.push(newModel);
+            graph.updateChild(model, model.id);
+          }
+        }
+      });
 
       Util.traverseTree(this.treeData, (subtree) => {
         if (subtree.level === undefined) subtree.level = 0;
@@ -347,21 +304,34 @@ export default {
       graph.fitView();
       // graph.zoom(0.8, { x: width * 3, y: height * 3 })
       setTimeout(() => {
-          // 1 默认展开两层节点，之后，重新渲染
-          G6.Util.traverseTree(this.treeData, function(item) {
-            // console.log('traverseTree ==> ', item, item.level)
-            if (item.level === 2 && item.children.length) {
-              console.log('## enter ==> ',  item, item.level)
-              //collapsed为true时默认收起
-              item.collapsed = true
-              graph.updateChild(item, item.id);
-            } else {
-              // 这里添加逻辑进行动态添加
-            }
-          })
-          // graph.render()
-          // graph.fitCenter() // 移到图中心
-        }, 10)
+        // 1 默认展开两层节点，之后，重新渲染
+        G6.Util.traverseTree(this.treeData, function (item) {
+          // console.log('traverseTree ==> ', item, item.level)
+          if (item.level === 2 && item.children && item.children.length) {
+            console.log("## enter ==> ", item, item.level);
+            //collapsed为true时默认收起
+            item.collapsed = true;
+            graph.updateChild(item, item.id);
+          } else if (item.level === 2) {
+            // todos 这里添加逻辑进行动态添加
+            console.log("## 打开 额外节点");
+            // 添加子节点的方法
+            // function addChildNode(parentId, newModel) {
+            //   graph.addChild(parentId, newModel);
+            // }
+            // const newModel = {
+            //   id: 'newModel',
+            //   name: 'newModel',
+            //   count: 12,
+            //   rate: '7.4%',
+            //   state: 'left',
+            // }
+            // graph.addChild(item.id, newModel);
+          }
+        });
+        // graph.render()
+        // graph.fitCenter() // 移到图中心
+      }, 10);
     },
   },
   mounted() {
