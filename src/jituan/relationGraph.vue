@@ -30,7 +30,7 @@ const defaultLayout = {
   },
   getHeight: function getHeight() {
     // return 196;
-    return 106;
+    return 56;
   },
   getWidth: function getWidth() {
     // return 280;
@@ -104,13 +104,15 @@ export default {
           const size = [100, 30];
           const subText = `(${cfg.count || ""}家企业)`;
           const width = 110;
-
+          const isMain = cfg.id === "0" ? 8 : 0;
           const keyShape = group.addShape("rect", {
             attrs: {
               width,
-              height: size[1],
+              // height: size[1]+8,
+              height: size[1] + isMain,
               radius: 0,
               fill: "rgba(255, 255, 255, 1)",
+              // stroke: "rgba(0, 83, 255, 1)",
               stroke: "rgba(0, 83, 255, 1)",
               x: -width / 2,
               y: -size[1] / 2,
@@ -146,13 +148,15 @@ export default {
             },
             name: "othet-node-count",
           });
-          const bottomText = `成本占比(${cfg.rate || ""}%)`;
+          const bottomText = `${cfg.rate || ""}`;
           group.addShape("text", {
             attrs: {
               text: bottomText,
               fontSize: 8,
               textAlign: "center",
-              y: 26,
+              // y: 26,
+              x: 20,
+              y: -20,
               fill: "rgba(153, 153, 153, 1)",
             },
             name: "othet-node-rate",
@@ -166,31 +170,21 @@ export default {
             y: 0,
             r: 6,
           };
-          if (cfg.children && cfg.children.length > 0) {
-            if (cfg.state === "left") {
-              group.addShape("marker", {
-                attrs: {
-                  ...defaultAttrs,
-                  symbol: cfg.collapsed ? Marker.expand : Marker.collapse,
-                  x: -width / 2 - 6,
-                },
-                name: "collapse-icon",
-              });
-            } else {
-              group.addShape("marker", {
-                attrs: {
-                  ...defaultAttrs,
-                  symbol: cfg.collapsed ? Marker.expand : Marker.collapse,
-                  x: width / 2 + 6,
-                },
-                name: "collapse-icon",
-              });
-            }
+          if (cfg.children && cfg.children.length > 0 && !isMain) {
+            group.addShape("marker", {
+              attrs: {
+                ...defaultAttrs,
+                symbol: cfg.collapsed ? Marker.expand : Marker.collapse,
+                // x: width / 2 + 6,
+                x: 0,
+                y: 22,
+              },
+              name: "collapse-icon",
+            });
           }
-        
+
           return keyShape;
         },
-       
       });
       const flowLine = {
         draw(cfg, group) {
@@ -228,34 +222,37 @@ export default {
         height,
         linkCenter: true,
         fitView: true,
-    preventOverlap: true,
+        preventOverlap: true,
         modes: {
           default: [
             {
               type: "tooltip", // tootip 无法展示
+              show: true,
               formatText: function formatText(model) {
-                var text = `${model.name || ""} , (${model.count || ""}家企业)`;
+                var text = `<div>
+                <p>${model.name || ""}</p>
+                <p>${model.count || ""}家企业</p>
+                </div>`;
 
                 return text;
               },
 
-              shouldUpdate: function shouldUpdate(e) {
-                const model = e.item.getModel();
-                const subText = `(${model.count || ""}家企业)`;
-                if (model.level === 0) return false;
-                if (
-                  fittingString(model.name, 100, 10).isMax ||
-                  fittingString(subText, 95 - model.name.length * 10, 8).isMax
-                ) {
-                  return true;
-                }
-                return false;
-              },
+              // shouldUpdate: function shouldUpdate(e) {
+              //   const model = e.item.getModel();
+              //   const subText = `(${model.count || ""}家企业)`;
+              //   if (model.level === 0) return false;
+              //   if (
+              //     fittingString(model.name, 100, 10).isMax ||
+              //     fittingString(subText, 95 - model.name.length * 10, 8).isMax
+              //   ) {
+              //     return true;
+              //   }
+              //   return false;
+              // },
             },
-            'drag-canvas',
-            'zoom-canvas'
+            "drag-canvas",
+            "zoom-canvas",
           ],
-          
         },
         //默认节点属性
         defaultNode: {
@@ -291,40 +288,8 @@ export default {
           if (model.collapsed === undefined) {
             model.collapsed = false;
           }
-          // //没有子节点
-          // if (
-          //   !model.children ||
-          //   (model.children && model.children.length === 0)
-          // ) {
-          //   console.log("UI_LOG: ", "没有子节点,发请求了");
-          //   this.loading = true;
-          //   //获取父节点的方向
-          //   const state = item._cfg.parent.getModel().state || model.state;
-          //   setTimeout(() => {
-          //     let children = [];
-          //     children.push({
-          //       id: `k-${Math.random()}`,
-          //       name: `k-${Math.random()}`,
-          //       state,
-          //     });
-
-          //     model.children = children;
-          //     Util.traverseTree(model, (subtree) => {
-          //       subtree.type = "other-node";
-          //     });
-          //     graph.updateChild(model, model.id);
-          //     const marker = item
-          //       .get("group")
-          //       .find((ele) => ele.get("name") === "collapse-icon");
-          //     marker.attr("symbol", Marker.collapse);
-          //     _this.loading = false;
-          //   }, 502);
-          // } else {
-          //   console.log("UI_LOG: ", model);
-          //   model.collapsed = !model.collapsed;
-          //   graph.updateChild(model, model.id);
-          //   // console.log('UI_LOG: ', graph.cfg.data.children)
-          // }
+          model.collapsed = !model.collapsed;
+          graph.updateChild(model, model.id);
         }
       });
       // graph.node((node) => {
@@ -337,12 +302,38 @@ export default {
       //   };
       // });
 
+      // 监听图的布局事件
+      // graph.on("afterlayout", () => {
+      //   // 获取所有节点
+      //   const nodes = graph.getNodes();
+      //   console.log('## node s => ', nodes)
+      //   // 遍历节点，根据层数控制显示
+      //   nodes.forEach((node) => {
+      //     const depth = node._cfg.model.depth; // 节点的层数
+      //     const model = node.getModel()
+      //     console.log('## node s => ', depth)
+      //     if (depth > 2) {
+      //       // 假设我们只显示前两层
+      //       // graph.hideItem(node); // 隐藏第三层及以后的节点
+      //       if (model.collapsed === undefined) {
+      //       model.collapsed = false;
+      //     }
+      //     model.collapsed = false;
+      //     graph.updateChild(model, model.id);
+      //     }
+      //     // } else {
+      //     //   graph.showItem(node); // 显示前两层的节点
+      //     // }
+      //   });
+      // });
+
       Util.traverseTree(this.treeData, (subtree) => {
         if (subtree.level === undefined) subtree.level = 0;
         subtree.children?.forEach((child) => (child.level = subtree.level + 1));
         switch (subtree.level) {
           // case 0:
-          //   subtree.type = "root-node";
+          //   // subtree.type = "root-node";
+          //   subtree.type = "rect-jsx";
           //   break;
           // case 1:
           //   subtree.type = 'level1-node'
@@ -355,6 +346,22 @@ export default {
       graph.render();
       graph.fitView();
       // graph.zoom(0.8, { x: width * 3, y: height * 3 })
+      setTimeout(() => {
+          // 1 默认展开两层节点，之后，重新渲染
+          G6.Util.traverseTree(this.treeData, function(item) {
+            // console.log('traverseTree ==> ', item, item.level)
+            if (item.level === 2 && item.children.length) {
+              console.log('## enter ==> ',  item, item.level)
+              //collapsed为true时默认收起
+              item.collapsed = true
+              graph.updateChild(item, item.id);
+            } else {
+              // 这里添加逻辑进行动态添加
+            }
+          })
+          // graph.render()
+          // graph.fitCenter() // 移到图中心
+        }, 10)
     },
   },
   mounted() {
