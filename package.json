@@ -1,6 +1,6 @@
 {
   "name": "ali-cli",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "description": "react project cli",
   "bin": {
     "ali-cli": "bin/ali-cli"
