@@ -62,7 +62,8 @@ export default {};
   height: 1px;
   background-color: #b3b3b3;
   position: absolute;
-  left: 0;
+  // left: 0;
+  left: 50%;
   top: 15px;
   z-index: -1;
 }
